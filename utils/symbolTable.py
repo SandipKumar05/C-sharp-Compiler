@@ -1,19 +1,20 @@
 import pprint
 
+
 class SymbolTable:
     # Constructor for the function
     def __init__(self):
         self.symbolTable = {
-                'main': {
-                    '__scopeName__': 'main', 
-                    '__parentName__': 'main', 
-                    '__type__':'FUNCTION', 
-                    '__returnType__': 'UNDEFINED',
-                    '__level__' : 0
-                    }
-                }
+            "main": {
+                "__scopeName__": "main",
+                "__parentName__": "main",
+                "__type__": "FUNCTION",
+                "__returnType__": "UNDEFINED",
+                "__level__": 0,
+            }
+        }
         self.temporaryCount = 0
-        self.functionList = { 'main': self.symbolTable['main']}
+        self.functionList = {"main": self.symbolTable["main"]}
         self.charSize = 1
         self.booleanSize = 4
         self.undefinedSize = 0
@@ -24,7 +25,7 @@ class SymbolTable:
 
         # Two stacks one for offset and other for the current scope
         self.offset = [0]
-        self.scope = [self.symbolTable['main']]
+        self.scope = [self.symbolTable["main"]]
 
         # For creating the temporaries
         self.tempBase = "t"
@@ -39,21 +40,21 @@ class SymbolTable:
         pprint.pprint(self.symbolTable)
         # print self.symbolTable['main']['i']['__offset__']
 
-    def returnOffset(self,var):
+    def returnOffset(self, var):
         return 1
-
 
     def printFunctionList(self):
         pprint.pprint(self.functionList)
+
     # function to return currentScope name
     def getCurrentScope(self):
-        return self.scope[len(self.scope) - 1]['__scopeName__']
+        return self.scope[len(self.scope) - 1]["__scopeName__"]
 
     # function to lookup an element in the stack
     def lookup(self, identifier):
         # Obtain the currentScope
         scopeLocation = len(self.scope)
-        # print scopeLocation  
+        # print scopeLocation
         return self.lookupScope(identifier, scopeLocation - 1)
 
     def lookupScope(self, identifier, scopeLocation):
@@ -71,15 +72,15 @@ class SymbolTable:
     def addScope(self, functionName, functionType):
         # add the scope to the symbolTable
         currentScope = self.scope[len(self.scope) - 1]
-        level = currentScope['__level__'] + 1
+        level = currentScope["__level__"] + 1
 
         currentScope[functionName] = {
-                '__scopeName__': functionName, 
-                '__parentName__': currentScope['__scopeName__'],
-                '__returnType__': functionType,
-                '__type__': 'FUNCTION',
-                '__level__' : level
-                }
+            "__scopeName__": functionName,
+            "__parentName__": currentScope["__scopeName__"],
+            "__returnType__": functionType,
+            "__type__": "FUNCTION",
+            "__level__": level,
+        }
         self.scope.append(currentScope[functionName])
 
         # Marks a new relative address
@@ -90,7 +91,7 @@ class SymbolTable:
     def deleteScope(self, functionName):
         # Update the width of the function
         currentScope = self.scope.pop()
-        currentScope['__width__'] = self.offset.pop()
+        currentScope["__width__"] = self.offset.pop()
 
     # function to add an element to the current scope
     def addIdentifier(self, identifier, IdentifierType, IdentifierWidth=0):
@@ -99,11 +100,11 @@ class SymbolTable:
 
         # Ladder to decide the width of the Identifier
         if IdentifierWidth == 0:
-            if IdentifierType == 'char':
+            if IdentifierType == "char":
                 IdentifierWidth = self.charSize
-            elif IdentifierType == 'bool':
+            elif IdentifierType == "bool":
                 IdentifierWidth = self.booleanSize
-            elif IdentifierType == 'int':
+            elif IdentifierType == "int":
                 IdentifierWidth = self.intSize
             else:
                 # For UNDEFINED
@@ -116,30 +117,30 @@ class SymbolTable:
         if not currentScope.has_key(identifier):
             currentScope[identifier] = {}
 
-        currentScope[identifier]['__width__'] = IdentifierWidth
-        currentScope[identifier]['__type__'] = IdentifierType
-        currentScope[identifier]['__offset__'] = currentOffset
-        currentScope[identifier]['__scopeLevel__'] = currentScope['__level__']
+        currentScope[identifier]["__width__"] = IdentifierWidth
+        currentScope[identifier]["__type__"] = IdentifierType
+        currentScope[identifier]["__offset__"] = currentOffset
+        currentScope[identifier]["__scopeLevel__"] = currentScope["__level__"]
 
         self.offset.append(currentOffset + IdentifierWidth)
 
     # add an attribute to the identifier
     def addAttribute(self, identifier, attributeName, attributeValue):
         entry = self.lookup(identifier)
-        entry['__' + attributeName + '__'] = attributeValue
+        entry["__" + attributeName + "__"] = attributeValue
 
     def addAttributeToCurrentScope(self, attributeName, attributeValue):
         currentScope = self.scope[len(self.scope) - 1]
-        currentScope['__' + attributeName + '__'] = attributeValue
+        currentScope["__" + attributeName + "__"] = attributeValue
 
     def getAttributeFromCurrentScope(self, attributeName):
         currentScope = self.scope[len(self.scope) - 1]
-        return currentScope[ '__' + attributeName + '__']
+        return currentScope["__" + attributeName + "__"]
 
     def getFunctionAttribute(self, identifier, attribute):
-        functionName = self.getAttribute(identifier, 'name')
+        functionName = self.getAttribute(identifier, "name")
         if self.functionList.has_key(functionName):
-            return self.functionList[functionName]['__' + attribute + '__']
+            return self.functionList[functionName]["__" + attribute + "__"]
         else:
             return None
 
@@ -148,8 +149,8 @@ class SymbolTable:
         # identifier = 'i'
         identifierEntry = self.lookup(identifier)
         # print identifierEntry
-        if identifierEntry.has_key('__' + attributeName + '__'):
-            return identifierEntry['__' + attributeName + '__']
+        if identifierEntry.has_key("__" + attributeName + "__"):
+            return identifierEntry["__" + attributeName + "__"]
         else:
             return None
 
@@ -164,26 +165,26 @@ class SymbolTable:
     # Lookup the variable in the current scope
     def existsInCurrentScope(self, identifier):
         return self.scope[len(self.scope) - 1].get(identifier, False) != False
-        
+
     def getAttributeFromFunctionList(self, function, attributeName):
         if self.functionList.has_key(function):
-            return self.functionList[function]['__' + attributeName + '__']
+            return self.functionList[function]["__" + attributeName + "__"]
         else:
             return None
 
     # Function to create new temporaries
-    def newTemp(self, memoryLocation='', variable='', loadFromMemory=False):
+    def newTemp(self, memoryLocation="", variable="", loadFromMemory=False):
         self.tempCount = self.tempCount + 1
         createdTemp = self.tempBase + str(self.tempCount)
         return createdTemp
 
     def newLevel(self):
         self.levelCount += 1
-        createdLevel =  self.levelBase + str(self.levelCount) 
-        return createdLevel 
+        createdLevel = self.levelBase + str(self.levelCount)
+        return createdLevel
 
-    def newString(self,stringValue):
-        self.stringCount +=1
+    def newString(self, stringValue):
+        self.stringCount += 1
         createString = self.stringBase + str(self.stringCount)
         self.string[createString] = stringValue
-        return createString 
+        return createString
